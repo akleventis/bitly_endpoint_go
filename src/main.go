@@ -12,9 +12,8 @@ var authToken string;
 func getClicks(w http.ResponseWriter, r *http.Request) {
 	authToken = r.Header["Authorization"][0]
 	
-	var groupGuid string;
-	
 	// if group guid is provided, use it, if not, grab defualt from user request
+	var groupGuid string;
 	switch guid := r.URL.Query().Get("groupGuid"); guid {
 	case "":
 		user := getUser()
@@ -38,26 +37,21 @@ func getClicks(w http.ResponseWriter, r *http.Request) {
 	for _, link := range bitlinkArr {
 		data := getClicksByCountry(link, unit, units)
 
-		var clicks int
-		var country string
-
-		// loop through clicks (struct[] of k:countries v:clicks)
-		// if no click data, len is 0, continue to next link
+		// loop through clicks (struct[] of k:countries v:clicks), if no click data, len is 0, continue to next link
 		for i:=0; i<len(data.Metrics);i++ {
-			clicks, country = data.Metrics[i].Clicks, data.Metrics[i].Value
+			clicks, country := data.Metrics[i].Clicks, data.Metrics[i].Value
 			
-			// if country in map, add clicks to value, else initialize country with current link clicks
+			// if country in map, add clicks to value, else initialize country with current link clicks divided by 30 days
 			if _, ok := countries[country]; ok {
-				countries[country] += float64(clicks)
+				countries[country] += (float64(clicks)/30)
 			} else {
-				countries[country] = float64(clicks)
+				countries[country] = (float64(clicks)/30)
 			}
 		}
 	}
-	// divide by 30, round 3 places
-	for k := range countries{
-		x := countries[k]/30
-		countries[k] = math.Round(x*1000)/1000
+	// Round off numbers
+	for k, v := range countries{
+		countries[k] = math.Round(v*1000)/1000
 	}
 	
 	// make response map => nest countries[map] inside
