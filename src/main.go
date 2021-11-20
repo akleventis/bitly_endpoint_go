@@ -11,18 +11,27 @@ var authToken string;
 
 func getClicks(w http.ResponseWriter, r *http.Request) {
 	authToken = r.Header["Authorization"][0]
-
-	user := getUser()
-
-	groupGuid := user.DefaultGroupGUID
+	
+	var groupGuid string;
+	
+	// if group guid is provided, use it, if not, grab defualt from user request
+	switch guid := r.URL.Query().Get("groupGuid"); guid {
+	case "":
+		user := getUser()
+		groupGuid = user.DefaultGroupGUID
+	default:
+		groupGuid = guid
+	}
 
 	allLinks := getLinks(groupGuid)
 
+	// create array of bitlink id's
 	bitlinkArr := []string{}
-	
 	for _, obj := range allLinks.Links{
 		bitlinkArr = append(bitlinkArr, obj.ID)
 	}
+
+	// eventually return this map
 	countries := make(map[string]float64)
 	unit, units := "month", "30"
 
@@ -35,8 +44,8 @@ func getClicks(w http.ResponseWriter, r *http.Request) {
 		// loop through clicks (struct[] of k:countries v:clicks)
 		// if no click data, len is 0, continue to next link
 		for i:=0; i<len(data.Metrics);i++ {
-			clicks = data.Metrics[i].Clicks
-			country = data.Metrics[i].Value
+			clicks, country = data.Metrics[i].Clicks, data.Metrics[i].Value
+			
 			// if country in map, add clicks to value, else initialize country with current link clicks
 			if _, ok := countries[country]; ok {
 				countries[country] += float64(clicks)

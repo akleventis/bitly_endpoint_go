@@ -47,6 +47,7 @@ func getClicksByCountry(bitlink string, unit string, units string) CountryMetric
 	return clicksByCountry
 }
 
+// Helper function: Returns []byte response from provided URL
 func retrieveData(url string) ([]byte, error) {
 	client := http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
