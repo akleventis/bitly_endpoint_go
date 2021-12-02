@@ -5,6 +5,7 @@ import (
 	"bitly_server_go/models"
 	"encoding/json"
 	"errors"
+	"log"
 	"math"
 	"net/http"
 )
@@ -18,7 +19,8 @@ func New() *Handler {
 func (h *Handler) GetClicks(w http.ResponseWriter, r *http.Request) {
 	authToken, err := getAuthToken(r)
 	if err != nil {
-		Error(w, 403, err)
+		Error(w, http.StatusForbidden, err)
+		return
 	}
 	client := client.New(authToken)
 
@@ -52,17 +54,17 @@ func (h *Handler) GetClicks(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+func Error(w http.ResponseWriter, code int, err error) {
+	log.Printf("Error: %s", err)
+	http.Error(w, err.Error(), code)
+}
+
 func getAuthToken(r *http.Request) (string, error) {
 	token := r.Header["Authorization"][0]
 	if token == "" {
 		return "", errors.New("Missing/Invalid auth header")
 	}
 	return token, nil
-}
-
-func Error(w http.ResponseWriter, code int, err error) {
-	w.WriteHeader(code)
-	w.Write([]byte(err.Error()))
 }
 
 func getGroupGuid(r *http.Request, c *client.Auth) (string, models.User) {
