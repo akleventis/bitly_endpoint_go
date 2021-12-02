@@ -16,23 +16,21 @@ type Bitlinks struct {
 }
 
 type CountryMetrics struct {
-	Unit          string `json:"unit"`
-	Units         int    `json:"units"`
-	Facet         string `json:"facet"`
-	UnitReference string `json:"unit_reference"`
-	Metrics       []struct {
-		Clicks int    `json:"clicks"`
-		Value  string `json:"value"`
-	} `json:"metrics"`
+	Metrics []*Metric `json:"metrics"`
+}
+
+type Metric struct {
+	Clicks int    `json:"clicks"`
+	Value  string `json:"value"`
 }
 
 // Client Response models
-type avgClickResponse struct {
-	Login         string `json:"login"`
-	GroupGUID     string `json:"group_guid"`
-	TotalBitlinks int    `json:"num_bitlinks"`
-	Metrics       []struct {
-		TotalClicks   int     `json:"total_clicks"`
-		AverageClicks float64 `json:"average_clicks"`
-	}
+type AvgClickResponse struct {
+	Login         string              `json:"login"`
+	GroupGUID     string              `json:"group_guid"`
+	TotalBitlinks int                 `json:"num_bitlinks"`
+	Metrics       map[string]*Average `json:"averages"`
+}
+type Average struct {
+	AverageClicks float64 `json:"average_clicks"`
 }
